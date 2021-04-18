@@ -25,6 +25,7 @@ public class SampleSceneDemoControl : MonoBehaviour
         // For example, matches a GET request on '/hello/Alice'
         httpServer.On(HttpMethod.Get, "/hello/{name}")
             .WithDescription("Say hello to someone") // Optionally add a description
+            .OnThread(ResponseThread.MainThread) // Optionally handle requests on the main thread or immediately
             .UntilDestroy(gameObject) // Optionally remove endpoint on destroy of some GameObject
             .Do(HandleHelloRequest);
         
@@ -52,7 +53,7 @@ public class SampleSceneDemoControl : MonoBehaviour
         Debug.Log($"Received request.\n" +
                   $"Path parameters: {string.Join(" | ", pathParameterPairs)}\n" +
                   $"Query parameters: {string.Join(" | ", queryParameterPairs)}");
-        
+
         // Send JSON response
         requestData.Context.Response.SendResponse("{\"message\":\"Hello " + requestData.PathParameters["name"] + "\"}", HttpStatusCode.OK);        
     }

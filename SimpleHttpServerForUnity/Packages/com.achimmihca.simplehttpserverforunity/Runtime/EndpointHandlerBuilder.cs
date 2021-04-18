@@ -14,6 +14,7 @@ namespace SimpleHttpServerForUnity
         private string description;
         private Action<EndpointRequestData> requestCallback;
         private GameObject gameObjectForOnDestroy;
+        private ResponseThread responseThread;
         
         public EndpointHandlerBuilder(HttpServer httpServer, HttpMethod httpMethod, string pathPattern)
         {
@@ -30,6 +31,12 @@ namespace SimpleHttpServerForUnity
             }
             
             this.description = description;
+            return this;
+        }
+
+        public EndpointHandlerBuilder OnThread(ResponseThread responseThread)
+        {
+            this.responseThread = responseThread;
             return this;
         }
         
@@ -60,7 +67,7 @@ namespace SimpleHttpServerForUnity
                 removeEndpointOnDestroy.httpServer = httpServer;
             }
             
-            httpServer.RegisterEndpoint(new EndpointHandler(httpMethod, pathPattern, description, requestCallback));
+            httpServer.RegisterEndpoint(new EndpointHandler(httpMethod, pathPattern, description, responseThread, requestCallback));
         }
     }
 }

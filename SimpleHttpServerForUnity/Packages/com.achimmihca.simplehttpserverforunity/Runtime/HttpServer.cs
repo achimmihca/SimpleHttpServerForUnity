@@ -48,7 +48,7 @@ namespace SimpleHttpServerForUnity
         private readonly Dictionary<string, EndpointHandler> idToEndpointHandlerMap = new Dictionary<string, EndpointHandler>();
         private readonly List<EndpointHandler> sortedEndpointHandlers = new List<EndpointHandler>();
 
-        private readonly ConcurrentQueue<HttpListenerContext> requestQueue = new ConcurrentQueue<HttpListenerContext>();
+        private readonly ConcurrentQueue<PendingRequest> requestQueue = new ConcurrentQueue<PendingRequest>();
 
         private Thread acceptRequestThread;
 
@@ -78,9 +78,9 @@ namespace SimpleHttpServerForUnity
         protected virtual void Update()
         {
             // Process the requests in Update. Update is called from Unity's main thread which allows access to all Unity API.
-            while (requestQueue.TryDequeue(out HttpListenerContext context))
+            while (requestQueue.TryDequeue(out PendingRequest pendingRequest))
             {
-                HandleRequest(context);
+                DoHandleRequest(pendingRequest);
             }
         }
 
@@ -178,9 +178,31 @@ namespace SimpleHttpServerForUnity
             {
                 // Note: The GetContext method blocks while waiting for a request.
                 context = listener.GetContext();
-                // The Request is enqueued and processed on the main thread (i.e. in Update).
-                // This enables access to all Unity API in the callback.
-                requestQueue.Enqueue(context);
+
+                if (TryFindMatchingEndpointHandler(context, out PendingRequest pendingRequest))
+                {
+                    if (pendingRequest.EndpointHandler.ResponseThread == ResponseThread.Immediately)
+                    {
+                        // Handle the request immediately
+                        DoHandleRequest(pendingRequest);
+                    }
+                    if (pendingRequest.EndpointHandler.ResponseThread == ResponseThread.NewThread)
+                    {
+                        // Handle the request on a new thread
+                        new Thread(() => DoHandleRequest(pendingRequest)).Start();
+                    }
+                    else
+                    {
+                        // The Request is enqueued and processed on the main thread (i.e. in Update).
+                        // This enables access to all Unity API in the callback.
+                        requestQueue.Enqueue(pendingRequest);
+                    }
+                }
+                else
+                {
+                    // No matching handler. This is handled on the main thread.
+                    requestQueue.Enqueue(new PendingRequest(context, null, null));
+                }
             }
             catch (Exception e)
             {
@@ -195,18 +217,19 @@ namespace SimpleHttpServerForUnity
             }
         }
 
-        private void HandleRequest(HttpListenerContext context)
+        private void DoHandleRequest(PendingRequest pendingRequest)
         {
             try
             {
-                if (TryHandleRequestByMatchingEndpointHandler(context))
+                if (pendingRequest.EndpointHandler != null)
                 {
+                    pendingRequest.EndpointHandler.DoHandle(pendingRequest.HttpListenerContext, pendingRequest.PlaceholderValues);
                     return;
                 }
-
+                
                 if (NoEndpointFoundCallback != null)
                 {
-                    NoEndpointFoundCallback(new EndpointRequestData(context, null));
+                    NoEndpointFoundCallback(new EndpointRequestData(pendingRequest.HttpListenerContext, null));
                 }
             }
             catch (Exception e)
@@ -218,9 +241,9 @@ namespace SimpleHttpServerForUnity
                 // Close the output stream.
                 try
                 {
-                    if (context != null)
+                    if (pendingRequest.HttpListenerContext != null)
                     {
-                        context.Response.Close();
+                        pendingRequest.HttpListenerContext.Response.Close();
                     }
                 }
                 catch (Exception e)
@@ -231,17 +254,19 @@ namespace SimpleHttpServerForUnity
             }
         }
 
-        private bool TryHandleRequestByMatchingEndpointHandler(HttpListenerContext context)
+        private bool TryFindMatchingEndpointHandler(HttpListenerContext context, out PendingRequest pendingRequest)
         {
             // The list is already sorted. Thus, the first matching handler is the best matching handler.
             foreach (EndpointHandler handler in sortedEndpointHandlers)
             {
-                if (handler.TryHandle(context))
+                if (handler.CanHandle(context, out Dictionary<string, string> placeholderValues))
                 {
+                    pendingRequest = new PendingRequest(context, handler, placeholderValues);
                     return true;
                 }
             }
 
+            pendingRequest = null;
             return false;
         }
 
