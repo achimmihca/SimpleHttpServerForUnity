@@ -8,26 +8,22 @@ namespace SimpleHttpServerForUnity
     public class EndpointHandler
     {
         public static Comparison<EndpointHandler> CompareDescendingByPlaceholderCount { get; private set; } =
-            (a, b) => b.GetPlaceholderCount().CompareTo(a.GetPlaceholderCount());
+            (a, b) => b.PlaceholderCount.CompareTo(a.PlaceholderCount);
 
-        public HttpMethod HttpMethod { get; private set; }
-        public string UrlPattern => patternMatcher.Pattern;
-        public string Description { get; private set; }
-
+        public HttpMethod HttpMethod => endpointData.HttpMethod;
+        public string PathPattern => endpointData.PathPattern;
+        public string Description => endpointData.Description;
+        public int PlaceholderCount => patternMatcher.PlaceholderCount;
+        
+        private readonly EndpointData endpointData;
         private readonly Action<EndpointRequestData> requestCallback;
         private readonly CurlyBracePlaceholderMatcher patternMatcher;
 
-        public EndpointHandler(HttpMethod httpMethod, string urlPattern, string description, Action<EndpointRequestData> requestCallback)
+        public EndpointHandler(HttpMethod httpMethod, string pathPattern, string description, Action<EndpointRequestData> requestCallback)
         {
-            this.patternMatcher = new CurlyBracePlaceholderMatcher(urlPattern);
+            this.patternMatcher = new CurlyBracePlaceholderMatcher(pathPattern);
+            this.endpointData = new EndpointData(httpMethod, pathPattern, description);
             this.requestCallback = requestCallback;
-            this.HttpMethod = httpMethod;
-            this.Description = description;
-        }
-
-        public int GetPlaceholderCount()
-        {
-            return patternMatcher.GetPlaceholderCount();
         }
 
         public bool TryHandle(HttpListenerContext context)

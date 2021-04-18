@@ -8,13 +8,13 @@ namespace SimpleHttpServerForUnity
 {
     public static class HttpServerExtensions
     {
-        public static void RegisterEndpoint(this HttpServer httpServer, GameObject gameObject, HttpMethod httpMethod, string pathPattern, string description, Action<EndpointRequestData> requestCallback)
+        public static void RegisterEndpoint(this HttpServer httpServer, GameObject gameObjectForOnDestroy, HttpMethod httpMethod, string pathPattern, string description, Action<EndpointRequestData> requestCallback)
         {
             httpServer.RegisterEndpoint(new EndpointHandler(httpMethod, pathPattern, description, requestCallback));
             
-            RemoveEndpointOnDestroy removeEndpointOnDestroy = gameObject.AddComponent<RemoveEndpointOnDestroy>();
+            RemoveEndpointOnDestroy removeEndpointOnDestroy = gameObjectForOnDestroy.AddComponent<RemoveEndpointOnDestroy>();
             removeEndpointOnDestroy.httpMethod = httpMethod;
-            removeEndpointOnDestroy.urlPattern = pathPattern;
+            removeEndpointOnDestroy.pathPattern = pathPattern;
             removeEndpointOnDestroy.httpServer = httpServer;
         }
         
@@ -25,7 +25,7 @@ namespace SimpleHttpServerForUnity
 
         public static void RemoveEndpoint(this HttpServer httpServer, EndpointHandler endpointHandler)
         {
-            httpServer.RemoveEndpoint(endpointHandler.HttpMethod, endpointHandler.UrlPattern);
+            httpServer.RemoveEndpoint(endpointHandler.HttpMethod, endpointHandler.PathPattern);
         }
 
         public static Dictionary<string, string> ToDictionary(this NameValueCollection nameValueCollection)
@@ -37,21 +37,6 @@ namespace SimpleHttpServerForUnity
             }
 
             return dictionary;
-        }
-    }
-
-    public class RemoveEndpointOnDestroy : MonoBehaviour
-    {
-        public HttpServer httpServer;
-        public HttpMethod httpMethod;
-        public string urlPattern;
-        
-        private void OnDestroy()
-        {
-            if (httpServer != null)
-            {
-                httpServer.RemoveEndpoint(httpMethod, urlPattern);
-            }
         }
     }
 }

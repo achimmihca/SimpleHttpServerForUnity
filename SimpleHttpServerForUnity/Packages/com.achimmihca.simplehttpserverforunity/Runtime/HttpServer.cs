@@ -130,6 +130,11 @@ namespace SimpleHttpServerForUnity
             httpListener?.Close();
             httpListener = null;
         }
+
+        public EndpointHandlerBuilder On(HttpMethod httpMethod, string pathPattern)
+        {
+            return new EndpointHandlerBuilder(this, httpMethod, pathPattern);
+        }
         
         public void RegisterEndpoint(EndpointHandler endpointHandler)
         {
@@ -138,7 +143,7 @@ namespace SimpleHttpServerForUnity
                 return;
             }
 
-            string endpointId = GetEndpointId(endpointHandler.HttpMethod, endpointHandler.UrlPattern);
+            string endpointId = GetEndpointId(endpointHandler.HttpMethod, endpointHandler.PathPattern);
             if (idToEndpointHandlerMap.ContainsKey(endpointId))
             {
                 this.RemoveEndpoint(endpointHandler);
@@ -149,9 +154,9 @@ namespace SimpleHttpServerForUnity
             sortedEndpointHandlers.Sort(EndpointHandler.CompareDescendingByPlaceholderCount);
         }
 
-        public void RemoveEndpoint(HttpMethod httpMethod, string urlPattern)
+        public void RemoveEndpoint(HttpMethod httpMethod, string pathPattern)
         {
-            string endpointId = GetEndpointId(httpMethod, urlPattern);
+            string endpointId = GetEndpointId(httpMethod, pathPattern);
             if (idToEndpointHandlerMap.TryGetValue(endpointId, out EndpointHandler endpointHandler))
             {
                 idToEndpointHandlerMap.Remove(endpointId);
@@ -159,10 +164,10 @@ namespace SimpleHttpServerForUnity
             }
         }
 
-        public List<Endpoint> GetRegisteredEndpoints()
+        public List<EndpointData> GetRegisteredEndpoints()
         {
             return sortedEndpointHandlers
-                .Select(it => new Endpoint(it.HttpMethod, it.UrlPattern, it.Description))
+                .Select(it => new EndpointData(it.HttpMethod, it.PathPattern, it.Description))
                 .ToList();
         }
         

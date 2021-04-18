@@ -21,30 +21,39 @@ public class SampleSceneDemoControl : MonoBehaviour
         httpServer.host = IpAddressUtils.GetIpAddress(AddressFamily.IPv4, NetworkInterfaceType.Wireless80211);
         
         // Register endpoints
-        httpServer.RegisterEndpoint(new EndpointHandler(HttpMethod.Get, "/hello/{name}", "Say hello to someone", requestData =>
-        {
-            List<string> pathParameterPairs = requestData.PathParameters
-                .Select(it => $"{it.Key}={it.Value}")
-                .ToList();
-            
-            List<string> queryParameterPairs = requestData.Context.Request.QueryString
-                .ToDictionary()
-                .Select(it => $"{it.Key}={it.Value}")
-                .ToList();
-            Debug.Log($"Saying hello.\n" +
-                      $"Path parameters: {string.Join(" | ", pathParameterPairs)}\n" +
-                      $"Query parameters: {string.Join(" | ", queryParameterPairs)}");
-            // Send JSON response
-            requestData.Context.Response.SendResponse("{\"message\":\"Hello " + requestData.PathParameters["name"] + "\"}", HttpStatusCode.OK);
-        }));
+        
+        // For example, matches a GET request on '/hello/Alice'
+        httpServer.On(HttpMethod.Get, "/hello/{name}")
+            .WithDescription("Say hello to someone") // Optionally add a description
+            .UntilDestroy(gameObject) // Optionally remove endpoint on destroy of some GameObject
+            .Do(HandleHelloRequest);
         
         // Print registered endpoints
         List<string> endpointInfos = httpServer.GetRegisteredEndpoints()
-            .Select(endpoint => $"{endpoint.HttpMethod} {endpoint.UrlPattern} - {endpoint.Description}")
+            .Select(endpoint => $"{endpoint.HttpMethod} {endpoint.PathPattern} - {endpoint.Description}")
             .ToList();
         Debug.Log("Registered endpoints: \n" + string.Join("\n", endpointInfos));
         
         // Start the server to answer requests
         httpServer.StartHttpListener();
+    }
+
+    private void HandleHelloRequest(EndpointRequestData requestData)
+    {
+        List<string> pathParameterPairs = requestData.PathParameters
+            .Select(it => $"{it.Key}={it.Value}")
+            .ToList();
+            
+        List<string> queryParameterPairs = requestData.Context.Request.QueryString
+            .ToDictionary()
+            .Select(it => $"{it.Key}={it.Value}")
+            .ToList();
+        
+        Debug.Log($"Received request.\n" +
+                  $"Path parameters: {string.Join(" | ", pathParameterPairs)}\n" +
+                  $"Query parameters: {string.Join(" | ", queryParameterPairs)}");
+        
+        // Send JSON response
+        requestData.Context.Response.SendResponse("{\"message\":\"Hello " + requestData.PathParameters["name"] + "\"}", HttpStatusCode.OK);        
     }
 }

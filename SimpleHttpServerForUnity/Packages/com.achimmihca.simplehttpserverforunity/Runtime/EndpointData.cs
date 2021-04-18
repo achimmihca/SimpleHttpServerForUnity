@@ -2,16 +2,16 @@
 
 namespace SimpleHttpServerForUnity
 {
-    public class Endpoint
+    public class EndpointData
     {
         public HttpMethod HttpMethod { get; private set; }
-        public string UrlPattern { get; private set; }
+        public string PathPattern { get; private set; }
         public string Description { get; private set; }
 
-        public Endpoint(HttpMethod httpMethod, string urlPattern, string description)
+        public EndpointData(HttpMethod httpMethod, string pathPattern, string description)
         {
             HttpMethod = httpMethod;
-            UrlPattern = urlPattern;
+            PathPattern = pathPattern;
             Description = description;
         }
     }

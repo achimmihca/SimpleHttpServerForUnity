@@ -11,6 +11,8 @@ namespace SimpleHttpServerForUnity
         private readonly Regex regex;
         private readonly List<string> placeholderNames;
 
+        public int PlaceholderCount => placeholderNames.Count;
+        
         public CurlyBracePlaceholderMatcher(string pattern)
         {
             Pattern = pattern;
@@ -18,7 +20,8 @@ namespace SimpleHttpServerForUnity
             MatchCollection placeholderMatches = Regex.Matches(pattern, @"\{[^/]+\}");
             string patternNoCurlyBraces = pattern
                 .Replace("{", "CURLY_OPEN")
-                .Replace("}", "CURLY_CLOSE");
+                .Replace("}", "CURLY_CLOSE")
+                .Replace("*", "ASTERISK");
             string regexPattern = Regex.Escape(patternNoCurlyBraces);
 
             placeholderNames = new List<string>(placeholderMatches.Count);
@@ -28,8 +31,9 @@ namespace SimpleHttpServerForUnity
                 string placeholderName = match.Value.Substring(1, match.Length - 2);
                 placeholderNames.Add(placeholderName);
                 // Replace the placeholder with a match group
-                regexPattern = regexPattern.Replace("CURLY_OPEN" + placeholderName + "CURLY_CLOSE",
-                    "(?<" + placeholderName + ">[^/]+)");
+                regexPattern = regexPattern
+                    .Replace("CURLY_OPEN" + placeholderName + "CURLY_CLOSE", "(?<" + placeholderName + ">[^/]+)")
+                    .Replace("ASTERISK", "(?<asterisk>.*)");
             }
 
             regex = new Regex(regexPattern);
@@ -49,15 +53,14 @@ namespace SimpleHttpServerForUnity
             for (int i = 1; i < match.Groups.Count; i++)
             {
                 Group group = match.Groups[i];
-                placeholderValues[group.Name] = group.Value;
+                // Change the name of the asterisk-group in the returned Dictionary.
+                string placeholderName = group.Name != "asterisk"
+                    ? group.Name
+                    : "*";
+                placeholderValues[placeholderName] = group.Value;
             }
 
             return true;
-        }
-
-        public int GetPlaceholderCount()
-        {
-            return placeholderNames.Count;
         }
     }
 }
