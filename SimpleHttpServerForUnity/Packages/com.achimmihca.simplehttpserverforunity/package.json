@@ -1,0 +1,28 @@
+{
+    "name": "com.achimmihca.simplehttpserverforunity",
+    "version": "1.0.0",
+    "displayName": "SimpleHttpServerForUnity",
+    "description": "Register endpoints with ease",
+    "dependencies": {
+    },
+   "keywords": [
+      "http",
+      "server",
+      "HttpListener",
+      "web",
+      "api",
+      "rest"
+    ],
+    "author": {
+      "name": "Andreas Stange",
+      "email": "anst.dev@gmail.com",
+      "url": "https://github.com/achimmihca/SimpleHttpServerForUnity"
+    },
+	"samples": [
+    {
+     "displayName": "Sample1",
+     "description": "HTTP endpoint example",
+     "path": "Samples~/SampleFolder1"
+    }]
+}
+  

@@ -1,0 +1,17 @@
+{
+    "name": "com.achimmihca.Editor.simplehttpserverforunity",
+    "references": [
+		"com.achimmihca.simplehttpserverforunity"
+    ],
+    "includePlatforms": [
+		"Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
