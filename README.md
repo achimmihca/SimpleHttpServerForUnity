@@ -7,18 +7,17 @@ A simple HTTP server for Unity3D.
 
 - Register endpoints and serve requests with ease.
 - Respond to requests from Unity's main thread, from a new thread, or immediately.
-- The implementation builds on C# HttpListener.
+- The implementation builds on C# [HttpListener](https://docs.microsoft.com/en-us/dotnet/api/system.net.httplistener?view=net-5.0).
 
 # How to Use
 
-## Get the Code
+## Get the Package
 
-- You can add a dependency to your `Packages/manifest.json` in the following form:
+- You can add a dependency to your `Packages/manifest.json` using a [Git URL](https://docs.unity3d.com/2019.4/Documentation/Manual/upm-git.html) in the following form:
   `"com.achimmihca.simplehttpserverforunity": "https://github.com/achimmihca/SimpleHttpServerForUnity.git?path=SimpleHttpServerForUnity/Packages/com.achimmihca.simplehttpserverforunity#v1.0.0"`
-    - Note that `#v1.0.0` specifies a tag of this git repository. Remove this part to use the latest (possibly unstable) version.
-    - Note further that the path parameter (`?path=...`) points to the folder in this git repository, where the Unity package is placed.
+  - Note that `#v1.0.0` can be used to specify a tag or commit hash.
+- This package requires `Api Compatibility Level` `.NET 4.x` or above (in Unity `File > Project Settings... > Player > Other settings`)
 - This package ships with a sample that can be imported to your project using Unity's Package Manager.
-- This project requires `Api Compatibility Level` `.NET 4.x` or above (in Unity `File > Project Settings... > Player > Other settings`)
 
 ## Prepare HttpServer
 - Add an instance of HttpServer component to your scene.
@@ -54,9 +53,12 @@ httpServer.StartHttpListener();
 ## Get Registered Endpoints
 
 ```
-// Print registered endpoints
 List<string> endpointInfos = httpServer.GetRegisteredEndpoints()
     .Select(endpoint => $"{endpoint.HttpMethod} {endpoint.PathPattern} - {endpoint.Description}")
     .ToList();
 Debug.Log("Registered endpoints:\n" + string.Join("\n", endpointInfos));
 ```
+
+# History
+SimpleHttpServerForUnity has been created originally for [UltraStar Play](https://github.com/UltraStar-Deluxe/Play) to serve requests from a handful of clients in the same local area network.
+If you like singing, karaoke, or sing-along games then go check it out ;)
