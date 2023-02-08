@@ -1,7 +1,5 @@
 ﻿using System;
-using System.IO;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace SimpleHttpServerForUnity
@@ -13,17 +11,19 @@ namespace SimpleHttpServerForUnity
         private readonly string pathPattern;
         private string description;
         private Action<EndpointRequestData> requestCallback;
+        private Func<EndpointRequestData, bool> conditionFunction;
         private GameObject gameObjectForOnDestroy;
         private ResponseThread responseThread;
         
-        public EndpointHandlerBuilder(HttpServer httpServer, HttpMethod httpMethod, string pathPattern)
+        public EndpointHandlerBuilder(HttpServer httpServer, HttpMethod httpMethod, string pathPattern, ResponseThread responseThread)
         {
             this.httpServer = httpServer;
             this.httpMethod = httpMethod;
             this.pathPattern = pathPattern;
+            this.responseThread = responseThread;
         }
 
-        public EndpointHandlerBuilder WithDescription(string description)
+        public EndpointHandlerBuilder SetDescription(string description)
         {
             if (this.description != null)
             {
@@ -34,13 +34,13 @@ namespace SimpleHttpServerForUnity
             return this;
         }
 
-        public EndpointHandlerBuilder OnThread(ResponseThread responseThread)
+        public EndpointHandlerBuilder SetThread(ResponseThread responseThread)
         {
             this.responseThread = responseThread;
             return this;
         }
         
-        public EndpointHandlerBuilder UntilDestroy(GameObject gameObject)
+        public EndpointHandlerBuilder SetRemoveOnDestroy(GameObject gameObject)
         {
             if (this.gameObjectForOnDestroy != null)
             {
@@ -50,8 +50,8 @@ namespace SimpleHttpServerForUnity
             this.gameObjectForOnDestroy = gameObject;
             return this;
         }
-        
-        public void Do(Action<EndpointRequestData> requestCallback)
+
+        public EndpointHandlerBuilder SetCallback(Action<EndpointRequestData> requestCallback)
         {
             if (this.requestCallback != null)
             {
@@ -59,6 +59,22 @@ namespace SimpleHttpServerForUnity
             }
             
             this.requestCallback = requestCallback;
+            return this;
+        }
+
+        public EndpointHandlerBuilder SetCondition(Func<EndpointRequestData, bool> conditionFunction)
+        {
+            if (this.conditionFunction != null)
+            {
+                throw new ArgumentException("Condition function already set");
+            }
+            
+            this.conditionFunction = conditionFunction;
+            return this;
+        }
+        
+        public void Add()
+        {
             if (gameObjectForOnDestroy != null)
             {
                 RemoveEndpointOnDestroy removeEndpointOnDestroy = gameObjectForOnDestroy.AddComponent<RemoveEndpointOnDestroy>();
@@ -67,7 +83,7 @@ namespace SimpleHttpServerForUnity
                 removeEndpointOnDestroy.httpServer = httpServer;
             }
             
-            httpServer.RegisterEndpoint(new EndpointHandler(httpMethod, pathPattern, description, responseThread, requestCallback));
+            httpServer.RegisterEndpoint(new EndpointHandler(httpMethod, pathPattern, description, responseThread, requestCallback, conditionFunction));
         }
     }
 }

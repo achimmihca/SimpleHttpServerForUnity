@@ -1,9 +1,9 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
+using System.Text;
 using SimpleHttpServerForUnity;
 using UnityEngine;
 
@@ -23,11 +23,21 @@ public class SampleSceneDemoControl : MonoBehaviour
         // Register endpoints
         
         // For example, matches a GET request on '/hello/Alice'
-        httpServer.On(HttpMethod.Get, "/hello/{name}")
-            .WithDescription("Say hello to someone") // Optionally add a description
-            .OnThread(ResponseThread.MainThread) // Optionally handle requests on the main thread or immediately
-            .UntilDestroy(gameObject) // Optionally remove endpoint on destroy of some GameObject
-            .Do(HandleHelloRequest);
+        httpServer.CreateEndpoint(HttpMethod.Get, "/hello/{name}")
+            .SetDescription("Say hello to someone") // Optionally add a description
+            .SetThread(ResponseThread.MainThread) // Optionally handle requests on the main thread or immediately
+            .SetRemoveOnDestroy(gameObject) // Optionally remove endpoint on destroy of some GameObject
+            .SetCallback(HandleHelloRequest)
+            .Add();
+
+        // Example with optional condition function
+        httpServer.CreateEndpoint(HttpMethod.Get, "/hello-with-condition/{name}")
+            .SetDescription("Say hello to someone")
+            .SetThread(ResponseThread.MainThread)
+            .SetRemoveOnDestroy(gameObject)
+            .SetCondition(HasDummyPermission)
+            .SetCallback(HandleHelloRequest)
+            .Add();
         
         // Print registered endpoints
         List<string> endpointInfos = httpServer.GetRegisteredEndpoints()
@@ -37,6 +47,19 @@ public class SampleSceneDemoControl : MonoBehaviour
         
         // Start the server to answer requests
         httpServer.StartHttpListener();
+    }
+
+    private bool HasDummyPermission(EndpointRequestData requestData)
+    {
+        if (requestData.Context.Request.Headers["permissions"] == "dummy")
+        {
+            return true;
+        }
+
+        requestData.Context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+        requestData.Context.Response.ContentType = "text/plain";
+        requestData.Context.Response.OutputStream.Write(Encoding.UTF8.GetBytes("Missing dummy permission"));
+        return false;
     }
 
     private void HandleHelloRequest(EndpointRequestData requestData)

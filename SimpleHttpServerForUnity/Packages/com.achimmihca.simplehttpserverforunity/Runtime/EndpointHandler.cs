@@ -27,6 +27,7 @@ namespace SimpleHttpServerForUnity
         
         private readonly EndpointData endpointData;
         private readonly Action<EndpointRequestData> requestCallback;
+        private readonly Func<EndpointRequestData, bool> conditionFunction;
         private readonly CurlyBracePlaceholderMatcher patternMatcher;
 
         public EndpointHandler(
@@ -34,12 +35,14 @@ namespace SimpleHttpServerForUnity
             string pathPattern,
             string description,
             ResponseThread responseThread,
-            Action<EndpointRequestData> requestCallback)
+            Action<EndpointRequestData> requestCallback,
+            Func<EndpointRequestData, bool> conditionFunction)
         {
             this.patternMatcher = new CurlyBracePlaceholderMatcher(pathPattern);
             this.endpointData = new EndpointData(httpMethod, pathPattern, description);
             this.ResponseThread = responseThread;
             this.requestCallback = requestCallback;
+            this.conditionFunction = conditionFunction;
         }
 
         public bool CanHandle(HttpListenerContext context, out Dictionary<string, string> placeholderValues)
@@ -53,7 +56,14 @@ namespace SimpleHttpServerForUnity
         public void DoHandle(HttpListenerContext context, Dictionary<string, string> placeholderValues)
         {
             EndpointRequestData endpointRequestData = new EndpointRequestData(context, placeholderValues);
-            requestCallback(endpointRequestData);
+
+            if (conditionFunction != null
+                && !conditionFunction.Invoke(endpointRequestData))
+            {
+                return;
+            }
+
+            requestCallback?.Invoke(endpointRequestData);
         }
     }
 }

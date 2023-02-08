@@ -132,12 +132,11 @@ namespace SimpleHttpServerForUnity
             httpListener = null;
         }
 
-        public EndpointHandlerBuilder On(HttpMethod httpMethod, string pathPattern)
+        public virtual EndpointHandlerBuilder CreateEndpoint(HttpMethod httpMethod, string pathPattern)
         {
             return new EndpointHandlerBuilder(this, httpMethod, pathPattern, DefaultResponseThread);
         }
 
-        public void RegisterEndpoint(EndpointHandler endpointHandler)
         public virtual void RegisterEndpoint(EndpointHandler endpointHandler)
         {
             if (!IsSupported)
