@@ -137,6 +137,7 @@ namespace SimpleHttpServerForUnity
         }
         
         public void RegisterEndpoint(EndpointHandler endpointHandler)
+        public virtual void RegisterEndpoint(EndpointHandler endpointHandler)
         {
             if (!IsSupported)
             {
@@ -154,7 +155,7 @@ namespace SimpleHttpServerForUnity
             sortedEndpointHandlers.Sort(EndpointHandler.CompareDescendingByPlaceholderCountThenSegmentCount);
         }
 
-        public void RemoveEndpoint(HttpMethod httpMethod, string pathPattern)
+        public virtual void RemoveEndpoint(HttpMethod httpMethod, string pathPattern)
         {
             string endpointId = GetEndpointId(httpMethod, pathPattern);
             if (idToEndpointHandlerMap.TryGetValue(endpointId, out EndpointHandler endpointHandler))
@@ -164,14 +165,14 @@ namespace SimpleHttpServerForUnity
             }
         }
 
-        public List<EndpointData> GetRegisteredEndpoints()
+        public virtual List<EndpointData> GetRegisteredEndpoints()
         {
             return sortedEndpointHandlers
                 .Select(it => new EndpointData(it.HttpMethod, it.PathPattern, it.Description))
                 .ToList();
         }
         
-        private void AcceptRequest(HttpListener listener)
+        protected virtual void AcceptRequest(HttpListener listener)
         {
             HttpListenerContext context;
             try
@@ -217,7 +218,7 @@ namespace SimpleHttpServerForUnity
             }
         }
 
-        private void DoHandleRequest(PendingRequest pendingRequest)
+        protected virtual void DoHandleRequest(PendingRequest pendingRequest)
         {
             try
             {
@@ -254,7 +255,7 @@ namespace SimpleHttpServerForUnity
             }
         }
 
-        private bool TryFindMatchingEndpointHandler(HttpListenerContext context, out PendingRequest pendingRequest)
+        protected virtual bool TryFindMatchingEndpointHandler(HttpListenerContext context, out PendingRequest pendingRequest)
         {
             // The list is already sorted. Thus, the first matching handler is the best matching handler.
             foreach (EndpointHandler handler in sortedEndpointHandlers)
@@ -270,7 +271,7 @@ namespace SimpleHttpServerForUnity
             return false;
         }
 
-        protected void InitSingleInstance()
+        protected virtual void InitSingleInstance()
         {
             if (!Application.isPlaying)
             {
@@ -292,12 +293,12 @@ namespace SimpleHttpServerForUnity
             DontDestroyOnLoad(gameObject);
         }
 
-        private static string GetEndpointId(HttpMethod method, string pattern)
+        protected static string GetEndpointId(HttpMethod method, string pattern)
         {
             return method.Method + "|" + pattern;
         }
 
-        private static void DefaultNoEndpointFoundCallback(EndpointRequestData requestData)
+        protected static void DefaultNoEndpointFoundCallback(EndpointRequestData requestData)
         {
             Debug.Log($"No matching endpoint found for '{requestData.Context.Request.HttpMethod}' on {requestData.Context.Request.Url}");
             requestData.Context.Response.SendResponse("", HttpStatusCode.NotFound);
