@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
-using UnityEngine;
 
 namespace SimpleHttpServerForUnity
 {
@@ -12,7 +11,27 @@ namespace SimpleHttpServerForUnity
         private readonly List<string> placeholderNames;
 
         public int PlaceholderCount => placeholderNames.Count;
-        
+        public int SegmentCount
+        {
+            get
+            {
+                string relevantPattern = Pattern
+                    .Replace("\\", "/")
+                    .Replace("http://", "")
+                    .Replace("https://", "");
+                if (!relevantPattern.StartsWith("/"))
+                {
+                    relevantPattern = "/" + relevantPattern;
+                }
+                if (relevantPattern.EndsWith("/"))
+                {
+                    relevantPattern = relevantPattern.Substring(0, relevantPattern.Length - 1);
+                }
+
+                return relevantPattern.Count(c => c == '/');
+            }
+        }
+
         public CurlyBracePlaceholderMatcher(string pattern)
         {
             Pattern = pattern;

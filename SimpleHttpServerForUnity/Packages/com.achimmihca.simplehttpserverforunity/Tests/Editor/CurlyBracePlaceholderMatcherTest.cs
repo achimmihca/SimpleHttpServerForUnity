@@ -1,14 +1,12 @@
 ﻿using System.Collections.Generic;
 using NUnit.Framework;
-using SimpleHttpServerForUnity;
-
 
 namespace SimpleHttpServerForUnity
 {
 	public class CurlyBracePlaceholderMatcherTest
 	{
 		[Test]
-		public void DoTestCurlyBracePlaceholder()
+		public void CurlyBracePlaceholderTest()
 		{
 			CurlyBracePlaceholderMatcher matcher = new CurlyBracePlaceholderMatcher("http://api/{foo}/{bar}");
 			
@@ -21,9 +19,25 @@ namespace SimpleHttpServerForUnity
 			Assert.AreEqual("fooValue", placeholderValues2["foo"]);
 			Assert.AreEqual("barValue", placeholderValues2["bar"]);
 		}
-		
+
+        [Test]
+        public void SegmentCountTest()
+        {
+            CurlyBracePlaceholderMatcher matcher1Segments = new CurlyBracePlaceholderMatcher("http://api/");
+            CurlyBracePlaceholderMatcher matcher2Segments = new CurlyBracePlaceholderMatcher("api/entry");
+            CurlyBracePlaceholderMatcher matcher3Segments = new CurlyBracePlaceholderMatcher("http://api/entry/{foo}/");
+            CurlyBracePlaceholderMatcher matcher4Segments = new CurlyBracePlaceholderMatcher("api/entry/{foo}/bar");
+            CurlyBracePlaceholderMatcher matcher5Segments = new CurlyBracePlaceholderMatcher("https://api/entry/{foo}/something/{bar}/");
+            
+            Assert.AreEqual(1, matcher1Segments.SegmentCount);
+            Assert.AreEqual(2, matcher2Segments.SegmentCount);
+            Assert.AreEqual(3, matcher3Segments.SegmentCount);
+            Assert.AreEqual(4, matcher4Segments.SegmentCount);
+            Assert.AreEqual(5, matcher5Segments.SegmentCount);
+        }
+        
 		[Test]
-		public void DoTestWildcard()
+		public void WildcardTest()
 		{
 			CurlyBracePlaceholderMatcher matcher = new CurlyBracePlaceholderMatcher("http://api/{foo}/*");
 			

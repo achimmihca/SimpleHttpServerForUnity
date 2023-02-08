@@ -7,14 +7,23 @@ namespace SimpleHttpServerForUnity
 {
     public class EndpointHandler
     {
-        public static Comparison<EndpointHandler> CompareDescendingByPlaceholderCount { get; private set; } =
-            (a, b) => b.PlaceholderCount.CompareTo(a.PlaceholderCount);
+        public static Comparison<EndpointHandler> CompareDescendingByPlaceholderCountThenSegmentCount { get; private set; } = (a, b) =>
+        {
+            int placeholderCountCompareTo = b.PlaceholderCount.CompareTo(a.PlaceholderCount);
+            if (placeholderCountCompareTo != 0)
+            {
+                return placeholderCountCompareTo;
+            }
+
+            return b.SegmentCount.CompareTo(a.SegmentCount);
+        };
 
         public HttpMethod HttpMethod => endpointData.HttpMethod;
         public string PathPattern => endpointData.PathPattern;
         public string Description => endpointData.Description;
         public int PlaceholderCount => patternMatcher.PlaceholderCount;
         public ResponseThread ResponseThread { get; private set; } = ResponseThread.MainThread;
+        public int SegmentCount => patternMatcher.SegmentCount;
         
         private readonly EndpointData endpointData;
         private readonly Action<EndpointRequestData> requestCallback;

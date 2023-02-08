@@ -151,7 +151,7 @@ namespace SimpleHttpServerForUnity
 
             idToEndpointHandlerMap.Add(endpointId, endpointHandler);
             sortedEndpointHandlers.Add(endpointHandler);
-            sortedEndpointHandlers.Sort(EndpointHandler.CompareDescendingByPlaceholderCount);
+            sortedEndpointHandlers.Sort(EndpointHandler.CompareDescendingByPlaceholderCountThenSegmentCount);
         }
 
         public void RemoveEndpoint(HttpMethod httpMethod, string pathPattern)
