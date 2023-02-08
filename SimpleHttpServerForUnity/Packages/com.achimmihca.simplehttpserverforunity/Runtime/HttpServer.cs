@@ -32,7 +32,8 @@ namespace SimpleHttpServerForUnity
                 return instance;
             }
         }
-        
+
+        public static ResponseThread DefaultResponseThread { get; set; } = ResponseThread.MainThread;
         public static bool IsSupported => HttpListener.IsSupported;
         
         public string scheme = "http";
@@ -133,9 +134,9 @@ namespace SimpleHttpServerForUnity
 
         public EndpointHandlerBuilder On(HttpMethod httpMethod, string pathPattern)
         {
-            return new EndpointHandlerBuilder(this, httpMethod, pathPattern);
+            return new EndpointHandlerBuilder(this, httpMethod, pathPattern, DefaultResponseThread);
         }
-        
+
         public void RegisterEndpoint(EndpointHandler endpointHandler)
         public virtual void RegisterEndpoint(EndpointHandler endpointHandler)
         {

@@ -22,8 +22,8 @@ namespace SimpleHttpServerForUnity
         public string PathPattern => endpointData.PathPattern;
         public string Description => endpointData.Description;
         public int PlaceholderCount => patternMatcher.PlaceholderCount;
-        public ResponseThread ResponseThread { get; private set; } = ResponseThread.MainThread;
         public int SegmentCount => patternMatcher.SegmentCount;
+        public ResponseThread ResponseThread { get; private set; }
         
         private readonly EndpointData endpointData;
         private readonly Action<EndpointRequestData> requestCallback;
