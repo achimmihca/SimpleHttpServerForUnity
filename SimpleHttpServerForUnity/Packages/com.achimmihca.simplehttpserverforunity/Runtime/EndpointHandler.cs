@@ -29,6 +29,7 @@ namespace SimpleHttpServerForUnity
         private readonly Action<EndpointRequestData> requestCallback;
         private readonly Func<EndpointRequestData, bool> conditionFunction;
         private readonly CurlyBracePlaceholderMatcher patternMatcher;
+        private readonly Dictionary<object, object> userData;
 
         public EndpointHandler(
             HttpMethod httpMethod,
@@ -36,13 +37,15 @@ namespace SimpleHttpServerForUnity
             string description,
             ResponseThread responseThread,
             Action<EndpointRequestData> requestCallback,
-            Func<EndpointRequestData, bool> conditionFunction)
+            Func<EndpointRequestData, bool> conditionFunction,
+            Dictionary<object, object> userData)
         {
             this.patternMatcher = new CurlyBracePlaceholderMatcher(pathPattern);
             this.endpointData = new EndpointData(httpMethod, pathPattern, description);
             this.ResponseThread = responseThread;
             this.requestCallback = requestCallback;
             this.conditionFunction = conditionFunction;
+            this.userData = userData;
         }
 
         public bool CanHandle(HttpListenerContext context, out Dictionary<string, string> placeholderValues)

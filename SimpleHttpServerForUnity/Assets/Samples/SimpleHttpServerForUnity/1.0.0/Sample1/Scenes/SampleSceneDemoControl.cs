@@ -28,6 +28,7 @@ public class SampleSceneDemoControl : MonoBehaviour
             .SetThread(ResponseThread.MainThread) // Optionally handle requests on the main thread or immediately
             .SetRemoveOnDestroy(gameObject) // Optionally remove endpoint on destroy of some GameObject
             .SetCondition(HasDummyPermission) // Optionally with condition
+            .SetUserData(new Dictionary<object, object> { { "someKey", "someValue" } }) // Optionally add custom data (e.g. for generation of documentation)
             .SetCallback(HandleHelloRequest)
             .Add();
 
