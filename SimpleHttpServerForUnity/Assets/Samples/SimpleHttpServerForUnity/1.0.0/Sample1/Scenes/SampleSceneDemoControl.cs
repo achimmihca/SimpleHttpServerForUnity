@@ -27,18 +27,10 @@ public class SampleSceneDemoControl : MonoBehaviour
             .SetDescription("Say hello to someone") // Optionally add a description
             .SetThread(ResponseThread.MainThread) // Optionally handle requests on the main thread or immediately
             .SetRemoveOnDestroy(gameObject) // Optionally remove endpoint on destroy of some GameObject
+            .SetCondition(HasDummyPermission) // Optionally with condition
             .SetCallback(HandleHelloRequest)
             .Add();
 
-        // Example with optional condition function
-        httpServer.CreateEndpoint(HttpMethod.Get, "/hello-with-condition/{name}")
-            .SetDescription("Say hello to someone")
-            .SetThread(ResponseThread.MainThread)
-            .SetRemoveOnDestroy(gameObject)
-            .SetCondition(HasDummyPermission)
-            .SetCallback(HandleHelloRequest)
-            .Add();
-        
         // Print registered endpoints
         List<string> endpointInfos = httpServer.GetRegisteredEndpoints()
             .Select(endpoint => $"{endpoint.HttpMethod} {endpoint.PathPattern} - {endpoint.Description}")
