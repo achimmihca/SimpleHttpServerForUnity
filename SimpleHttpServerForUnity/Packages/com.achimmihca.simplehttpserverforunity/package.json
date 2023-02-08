@@ -18,11 +18,5 @@
       "email": "anst.dev@gmail.com",
       "url": "https://github.com/achimmihca/SimpleHttpServerForUnity"
     },
-	"samples": [
-    {
-     "displayName": "Sample1",
-     "description": "HTTP endpoint example",
-     "path": "Samples~/SampleFolder1"
-    }]
+	"samples": []
 }
-  
